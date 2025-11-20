@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Assembly Engineer Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-3xl font-bold mb-6 text-center">Assembly Engineer Dashboard</h2>
+    <p class="text-lg mb-4">Welcome, {{ user.username }}! You are logged in as an Assembly Engineer.</p>
+
+    <div class="mb-8">
+        <h3 class="text-2xl font-semibold mb-4">Scan QR Code for Actuator Data</h3>
+
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="md:w-1/2">
+                <video id="qr-video" class="w-full border rounded-lg" autoplay muted playsinline></video>
+                <div class="mt-2">
+                    <button id="start-scan" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Start Scan</button>
+                    <button id="stop-scan" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2" disabled>Stop Scan</button>
+                    </div>
+                <p id="scan-status" class="text-sm text-gray-600 mt-2">Enter data below or click "Start Scan" to scan a QR code.</p>
+            </div>
+
+            <div class="md:w-1/2">
+                <p class="text-sm text-gray-700">All fields are editable. You can either type the values directly or scan a QR code (JSON payload) to populate them.</p>
+                <small class="text-xs text-gray-500">Expected QR JSON keys (example): sales_order_no, order_no, order_qty, line_item, series, type, size, cylinder_size, spring_size, moc, customer, item_code, creation_date, branch</small>
+            </div>
+        </div>
+    </div>
+
+    <form id="actuator-form" method="post" class="mb-8">
+        {% csrf_token %}
+        <h3 class="text-2xl font-semibold mb-4">Actuator Data</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Sales Order No</label>
+                <input id="sales_order_no" name="sales_order_no" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Line Item</label>
+                <input id="line_item" name="line_item" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Order No</label>
+                <input id="order_no" name="order_no" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Customer</label>
+                <input id="customer" name="customer" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Series</label>
+                <input id="series" name="series" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Type</label>
+                <input id="type" name="type" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Size</label>
+                <input id="size" name="size" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Cylinder Size</label>
+                <input id="cylinder_size" name="cylinder_size" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Spring Size</label>
+                <input id="spring_size" name="spring_size" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">MOC</label>
+                <input id="moc" name="moc" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Item Code</label>
+                <input id="item_code" name="item_code" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Order Qty</label>
+                <input id="order_qty" name="order_qty" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Creation Date</label>
+                <input id="creation_date" name="creation_date" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Branch</label>
+                <input id="branch" name="branch" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            </div>
+        </div>
+
+        <input type="hidden" id="actuator_data" name="actuator_data">
+        <div class="mt-4">
+            <button id="submit-btn" class="bg-green-500 text-white px-6 py-2 rounded opacity-50">Save Actuator Data</button>
+            <button id="clear-btn" type="button" class="ml-2 bg-gray-300 text-black px-4 py-2 rounded">Clear</button>
+        </div>
+    </form>
+</div>
+
+<script type="module">
+    import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
+
+    QrScanner.WORKER_PATH = "https://unpkg.com/qr-scanner@1.4.2/qr-scanner-worker.min.js";
+
+    // Your full JS code here...
+</script>
+
+
+<script type="module">
+    import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
+    QrScanner.WORKER_PATH = "https://unpkg.com/qr-scanner@1.4.2/qr-scanner-worker.min.js";
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const video = document.getElementById("qr-video");
+        const startBtn = document.getElementById("start-scan");
+        const stopBtn = document.getElementById("stop-scan");
+        const status = document.getElementById("scan-status");
+        const actuatorDataInput = document.getElementById("actuator_data");
+
+        const fields = [
+            "sales_order_no","line_item","order_no","customer","series","type",
+            "size","cylinder_size","spring_size","moc","item_code","order_qty",
+            "creation_date","branch"
+        ];
+
+        let qrScanner = null;
+
+        function enableSubmit() {
+            const o = document.getElementById("order_no").value.trim();
+            const s = document.getElementById("sales_order_no").value.trim();
+            const b = document.getElementById("submit-btn");
+
+            if (o && s) {
+                b.disabled = false;
+                b.classList.remove("opacity-50");
+            } else {
+                b.disabled = true;
+                b.classList.add("opacity-50");
+            }
+        }
+
+        // Fill form fields
+        function fillForm(data) {
+            fields.forEach(key => {
+                const el = document.getElementById(key);
+                if (el && data[key] !== undefined) el.value = data[key];
+            });
+        }
+
+        // Each field updates hidden JSON
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener("input", () => {
+                const d = {};
+                fields.forEach(f => d[f] = document.getElementById(f).value || "");
+                actuatorDataInput.value = JSON.stringify(d);
+                enableSubmit();
+            });
+        });
+
+        // Start scanner
+        startBtn.addEventListener("click", async () => {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            status.textContent = "Starting scanner...";
+
+            if (qrScanner) try { qrScanner.stop(); qrScanner.destroy(); } catch {}
+
+            qrScanner = new QrScanner(
+                video,
+                result => {
+                    try {
+                        const text = typeof result === "string" ? result : result.data;
+                        const json = JSON.parse(text);
+
+                        fillForm(json);
+                        actuatorDataInput.value = JSON.stringify(json);
+                        enableSubmit();
+
+                        status.textContent = "QR scanned successfully!";
+
+                        qrScanner.stop();
+                        qrScanner.destroy();
+                        qrScanner = null;
+
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+
+                    } catch {
+                        status.textContent = "Invalid QR — expected JSON.";
+                    }
+                }
+            );
+
+            try {
+                await qrScanner.start();
+                status.textContent = "Scanning...";
+            } catch (err) {
+                status.textContent = "Camera not available";
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        });
+
+        // Stop scanner
+        stopBtn.addEventListener("click", () => {
+            if (qrScanner) {
+                qrScanner.stop();
+                qrScanner.destroy();
+                qrScanner = null;
+            }
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            status.textContent = "Scanner stopped.";
+        });
+    });
+</script>
+
+
+{% endblock %}
