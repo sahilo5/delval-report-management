@@ -1,0 +1,31 @@
+{% comment %}
+Reusable Badge Component
+Usage:
+{% include "components/badge.html" with text="Active" type="success" %}
+
+Parameters:
+- text: Badge text (required)
+- type: Badge type (primary, secondary, success, danger, warning, info, gray) (default: primary)
+- size: Badge size (xs, sm, md, lg) (default: sm)
+- class: Additional CSS classes (optional)
+- id: Element ID (optional)
+{% endcomment %}
+
+<span {% if id %}id="{{ id }}"{% endif %} 
+      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+             {% if type == 'primary' %}bg-blue-100 text-blue-800
+             {% elif type == 'secondary' %}bg-gray-100 text-gray-800
+             {% elif type == 'success' %}bg-green-100 text-green-800
+             {% elif type == 'danger' %}bg-red-100 text-red-800
+             {% elif type == 'warning' %}bg-yellow-100 text-yellow-800
+             {% elif type == 'info' %}bg-cyan-100 text-cyan-800
+             {% elif type == 'gray' %}bg-gray-100 text-gray-800
+             {% else %}bg-blue-100 text-blue-800{% endif %}
+             {% if size == 'xs' %}px-1.5 py-0.5 text-xs
+             {% elif size == 'sm' %}px-2 py-0.5 text-xs
+             {% elif size == 'md' %}px-2.5 py-0.5 text-sm
+             {% elif size == 'lg' %}px-3 py-1 text-sm
+             {% else %}px-2 py-0.5 text-xs{% endif %}
+             {{ class }}">
+    {{ text }}
+</span>

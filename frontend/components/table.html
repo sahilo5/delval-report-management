@@ -1,0 +1,221 @@
+{% comment %}
+Reusable Table Component
+Usage:
+{% include "components/table.html" with headers=headers data=data table_id="ordersTable" %}
+
+Parameters:
+- headers: List of header objects with 'text' and 'key' properties (required)
+- data: List of data objects (required)
+- table_id: Unique ID for the table (required)
+- sortable: Boolean to enable sorting (default: true)
+- filterable: Boolean to enable filtering (default: true)
+- pagination: Boolean to enable pagination (default: false)
+- page_size: Number of items per page (default: 10)
+- class: Additional CSS classes (optional)
+- empty_message: Message to show when no data (default: "No data available")
+- actions: List of action buttons with 'text', 'type', and 'onclick' properties (optional)
+{% endcomment %}
+
+<div class="bg-white shadow overflow-hidden sm:rounded-md {{ class }}">
+    {% if filterable %}
+    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex-1 min-w-0">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <input type="text" 
+                           id="{{ table_id }}_search" 
+                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors duration-200" 
+                           placeholder="Search...">
+                </div>
+            </div>
+            {% if actions %}
+            <div class="mt-3 sm:mt-0 sm:ml-4">
+                {% for action in actions %}
+                    {% include "components/button.html" with text=action.text type=action.type size="sm" onclick=action.onclick %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200" id="{{ table_id }}">
+            <thead class="bg-gray-50">
+                <tr>
+                    {% for header in headers %}
+                        <th scope="col" 
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider
+                                   {% if sortable %}cursor-pointer hover:bg-gray-100 transition-colors duration-200{% endif %}"
+                            {% if sortable %}onclick="sortTable('{{ table_id }}', '{{ header.key }}')"{% endif %}>
+                            <div class="flex items-center">
+                                {{ header.text }}
+                                {% if sortable %}
+                                <svg class="ml-1 h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                                {% endif %}
+                            </div>
+                        </th>
+                    {% endfor %}
+                    {% if actions %}
+                    <th scope="col" class="relative px-6 py-3">
+                        <span class="sr-only">Actions</span>
+                    </th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% if data %}
+                    {% for item in data %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-150" data-row-id="{{ item.id }}">
+                            {% for header in headers %}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if header.key == 'sales_order_no' %}
+                                        {{ item.sales_order_no|default:"-" }}
+                                    {% elif header.key == 'line_item' %}
+                                        {{ item.line_item|default:"-" }}
+                                    {% elif header.key == 'order_no' %}
+                                        {{ item.order_no|default:"-" }}
+                                    {% elif header.key == 'customer' %}
+                                        {{ item.customer|default:"-" }}
+                                    {% elif header.key == 'material' %}
+                                        {{ item.material|default:"-" }}
+                                    {% elif header.key == 'order_qty' %}
+                                        {{ item.order_qty|default:"-" }}
+                                    {% elif header.key == 'completed_qty' %}
+                                        {{ item.completed_qty|default:"-" }}
+                                    {% elif header.key == 'pending_qty' %}
+                                        {{ item.pending_qty|default:"-" }}
+                                    {% elif header.key == 'actions' %}
+                                        {% if header.actions %}
+                                            {% for action in header.actions %}
+                                                {% with onclick=action.onclick|replace:"{id}",item.order_no %}
+                                                    {% include "components/button.html" with text=action.text type=action.type size="xs" onclick=onclick %}
+                                                {% endwith %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                            {% if actions %}
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {% for action in actions %}
+                                    {% with onclick=action.onclick|replace:"{id}",item.order_no %}
+                                        {% include "components/button.html" with text=action.text type=action.type size="xs" onclick=onclick %}
+                                    {% endwith %}
+                                {% endfor %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="{% if actions %}{{ headers|length|add:1 }}{% else %}{{ headers|length }}{% endif %}" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            {{ empty_message|default:"No data available" }}
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if pagination %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            {% include "components/button.html" with text="Previous" type="secondary" onclick="previousPage('{{ table_id }}')" %}
+            {% include "components/button.html" with text="Next" type="secondary" onclick="nextPage('{{ table_id }}')" %}
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing
+                    <span class="font-medium">1</span>
+                    to
+                    <span class="font-medium">{{ page_size|default:10 }}</span>
+                    of
+                    <span class="font-medium">{{ data|length }}</span>
+                    results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Previous</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        1
+                    </button>
+                    <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        2
+                    </button>
+                    <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        3
+                    </button>
+                    <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Next</span>
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Table functionality
+window.initializeTable = function(tableId) {
+    const searchInput = document.getElementById(tableId + '_search');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            const tbody = document.querySelector('#' + tableId + ' tbody');
+            const rows = tbody.querySelectorAll('tr');
+           
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    }
+};
+
+window.sortTable = function(tableId, columnKey) {
+    const table = document.getElementById(tableId);
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    const columnIndex = Array.from(table.querySelectorAll('thead th')).findIndex(th =>
+        th.textContent.trim().includes(columnKey)
+    );
+    
+    rows.sort((a, b) => {
+        const aValue = a.children[columnIndex].textContent.trim();
+        const bValue = b.children[columnIndex].textContent.trim();
+        
+        return aValue.localeCompare(bValue);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+};
+
+// Initialize table when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const tableId = '{{ table_id }}';
+    window.initializeTable(tableId);
+});
+</script>

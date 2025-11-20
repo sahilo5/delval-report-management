@@ -1,0 +1,117 @@
+{% comment %}
+Reusable Modal Component
+Usage:
+{% include "components/modal.html" with title="Confirm" content="Are you sure?" id="confirmModal" %}
+
+Parameters:
+- title: Modal title (optional)
+- content: Modal content (can be HTML or text) (required)
+- footer: Modal footer content (optional)
+- id: Unique ID for the modal (required)
+- size: Modal size (sm, md, lg, xl, full) (default: md)
+- backdrop_close: Boolean to close modal when clicking backdrop (default: true)
+- class: Additional CSS classes for modal content (optional)
+- show_close_button: Boolean to show close button (default: true)
+{% endcomment %}
+
+<div id="{{ id }}" 
+     class="fixed inset-0 z-50 overflow-y-auto hidden" 
+     aria-labelledby="modal-title" 
+     role="dialog" 
+     aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+             {% if backdrop_close %}onclick="closeModal('{{ id }}')"{% endif %} 
+             aria-hidden="true"></div>
+
+        <!-- This element is to trick the browser into centering the modal contents. -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:w-full
+                {% if size == 'sm' %}sm:max-w-lg
+                {% elif size == 'md' %}sm:max-w-2xl
+                {% elif size == 'lg' %}sm:max-w-4xl
+                {% elif size == 'xl' %}sm:max-w-6xl
+                {% elif size == 'full' %}sm:max-w-full sm:m-4
+                {% else %}sm:max-w-2xl{% endif %}
+                {{ class }}">
+            
+            {% if title or show_close_button %}
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="flex items-start">
+                    {% if title %}
+                    <div class="flex-1">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            {{ title }}
+                        </h3>
+                    </div>
+                    {% endif %}
+                    {% if show_close_button %}
+                    <div class="ml-auto flex-shrink-0">
+                        <button type="button" 
+                                class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                onclick="closeModal('{{ id }}')">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="{% if title or show_close_button %}bg-white{% else %}bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4{% endif %}">
+                <div class="sm:flex sm:items-start">
+                    <div class="w-full">
+                        {{ content|safe }}
+                    </div>
+                </div>
+            </div>
+            
+            {% if footer %}
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                {{ footer|safe }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        
+        // Focus management
+        const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusableElements.length > 0) {
+            focusableElements[0].focus();
+        }
+        
+        // Escape key to close
+        const handleEscape = (event) => {
+            if (event.key === 'Escape') {
+                closeModal(modalId);
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+}
+
+// Modal will be initialized when needed via openModal() function
+</script>

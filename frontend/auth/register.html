@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Report Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-bg {
+        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    .auth-card {
+        backdrop-filter: blur(10px);
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+    .password-strength {
+        height: 4px;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+    }
+    .strength-weak { background-color: #ef4444; width: 33%; }
+    .strength-medium { background-color: #f59e0b; width: 66%; }
+    .strength-strong { background-color: #10b981; width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Header -->
+        <div class="text-center">
+            <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-blue-600">
+                <svg class="h-10 w-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
+            <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Create your account</h2>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="auth-card shadow-2xl p-8">
+        <form method="post" class="space-y-6" id="registerForm" onsubmit="return validateRegistrationForm()">
+            {% csrf_token %}
+            
+            {% include "components/form_input.html" with field=form.username label="Username" type="text" placeholder="Choose a username" required=True autocomplete="username" help_text="Username must be at least 3 characters long" %}
+            
+            {% include "components/form_input.html" with field=form.email label="Email Address" type="email" placeholder="Enter your email" required=True autocomplete="email" help_text="We'll never share your email with anyone else" %}
+            
+            {% include "components/form_input.html" with field=form.password1 label="Password" type="password" placeholder="Create a strong password" required=True autocomplete="new-password" id="password1" oninput="checkPasswordStrength()" %}
+            
+            <!-- Password Strength Indicator -->
+            <div class="mt-2">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs text-gray-600">Password Strength</span>
+                    <span id="strength-text" class="text-xs font-medium">--</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1">
+                    <div id="password-strength" class="password-strength"></div>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Use 8+ characters with a mix of letters, numbers & symbols</p>
+            </div>
+            
+            {% include "components/form_input.html" with field=form.password2 label="Confirm Password" type="password" placeholder="Confirm your password" required=True autocomplete="new-password" id="password2" oninput="checkPasswordMatch()" %}
+            
+            <!-- Password Match Indicator -->
+            <div id="match-indicator" class="hidden mt-2">
+                <div class="flex items-center">
+                    <svg id="match-icon" class="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span id="match-text" class="text-sm"></span>
+                </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <input id="agree-terms" name="agree-terms" type="checkbox" required class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="agree-terms" class="ml-2 block text-sm text-gray-900">
+                        I agree to the 
+                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">Terms and Conditions</a>
+                        and 
+                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <div class="flex items-center">
+                    <input id="email-updates" name="email-updates" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="email-updates" class="ml-2 block text-sm text-gray-900">
+                        Send me product updates and announcements
+                    </label>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                {% include "components/button.html" with text="Create Account" type="primary" size="lg" class="w-full" onclick="showLoading('registerBtn', 'Creating account...')" id="registerBtn" %}
+                
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Or</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 justify-center">
+                    <p class="mt-2 text-sm text-gray-600">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">
+                    Sign in here
+                </a>
+            </p>
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus on username field
+    const usernameField = document.getElementById('id_username');
+    if (usernameField) {
+        usernameField.focus();
+    }
+    
+    // Add input animations
+    const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('transform', 'scale-105');
+            this.parentElement.style.transition = 'all 0.2s ease-in-out';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('transform', 'scale-105');
+        });
+    });
+});
+
+window.checkPasswordStrength = function() {
+    const password = document.getElementById('password1').value;
+    const strengthBar = document.getElementById('password-strength');
+    const strengthText = document.getElementById('strength-text');
+    
+    let strength = 0;
+    
+    // Check password strength
+    if (password.length >= 8) strength++;
+    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+    if (password.match(/[0-9]/)) strength++;
+    if (password.match(/[^a-zA-Z0-9]/)) strength++;
+    
+    // Update strength indicator
+    strengthBar.className = 'password-strength';
+    
+    if (password.length === 0) {
+        strengthText.textContent = '--';
+        strengthText.className = 'text-xs font-medium text-gray-500';
+    } else if (strength <= 1) {
+        strengthBar.classList.add('strength-weak');
+        strengthText.textContent = 'Weak';
+        strengthText.className = 'text-xs font-medium text-red-500';
+    } else if (strength === 2 || strength === 3) {
+        strengthBar.classList.add('strength-medium');
+        strengthText.textContent = 'Medium';
+        strengthText.className = 'text-xs font-medium text-yellow-500';
+    } else {
+        strengthBar.classList.add('strength-strong');
+        strengthText.textContent = 'Strong';
+        strengthText.className = 'text-xs font-medium text-green-500';
+    }
+}
+
+window.checkPasswordMatch = function() {
+    const password1 = document.getElementById('password1').value;
+    const password2 = document.getElementById('password2').value;
+    const matchIndicator = document.getElementById('match-indicator');
+    const matchIcon = document.getElementById('match-icon');
+    const matchText = document.getElementById('match-text');
+    
+    if (password2.length === 0) {
+        matchIndicator.classList.add('hidden');
+        return;
+    }
+    
+    matchIndicator.classList.remove('hidden');
+    
+    if (password1 === password2) {
+        matchIcon.classList.remove('text-red-500');
+        matchIcon.classList.add('text-green-500');
+        matchText.textContent = 'Passwords match';
+        matchText.className = 'text-sm text-green-500';
+    } else {
+        matchIcon.classList.add('text-red-500');
+        matchIcon.classList.remove('text-green-500');
+        matchText.textContent = 'Passwords do not match';
+        matchText.className = 'text-sm text-red-500';
+    }
+}
+
+window.validateRegistrationForm = function() {
+    const form = document.getElementById('registerForm');
+    const password1 = document.getElementById('password1').value;
+    const password2 = document.getElementById('password2').value;
+    const agreeTerms = document.getElementById('agree-terms').checked;
+    
+    // Basic form validation
+    if (!window.validateForm('registerForm')) {
+        return false;
+    }
+    
+    // Check password match
+    if (password1 !== password2) {
+        alert('Passwords do not match');
+        return false;
+    }
+    
+    // Check terms agreement
+    if (!agreeTerms) {
+        alert('You must agree to the Terms and Conditions');
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

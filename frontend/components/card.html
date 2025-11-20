@@ -1,0 +1,72 @@
+{% comment %}
+Reusable Card Component
+Usage:
+{% include "components/card.html" with title="Card Title" content="Card content" %}
+
+Parameters:
+- title: Card title (optional)
+- content: Card content (can be HTML or text) (optional)
+- footer: Card footer content (optional)
+- header_class: Additional CSS classes for header (optional)
+- body_class: Additional CSS classes for body (optional)
+- footer_class: Additional CSS classes for footer (optional)
+- class: Additional CSS classes for card container (optional)
+- id: Element ID (optional)
+- collapsible: Boolean to make card collapsible (default: false)
+- collapsed: Boolean to start collapsed (default: false)
+{% endcomment %}
+
+<div class="bg-white overflow-hidden shadow rounded-lg {{ class }}" {% if id %}id="{{ id }}"{% endif %}>
+    {% if title or collapsible %}
+    <div class="px-4 py-5 sm:px-6 {% if header_class %}{{ header_class }}{% else %}border-b border-gray-200{% endif %}">
+        <div class="flex items-center justify-between">
+            {% if title %}
+            <h3 class="text-lg leading-6 font-medium text-gray-900">{{ title }}</h3>
+            {% endif %}
+            {% if collapsible %}
+            <button type="button" 
+                    class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    onclick="toggleCardCollapse('{% if id %}{{ id }}{% else %}card_{{ forloop.counter }}{% endif %}')">
+                <svg id="{% if id %}{{ id }}{% else %}card_{{ forloop.counter }}{% endif %}_icon" 
+                     class="h-5 w-5 transform transition-transform duration-200 {% if collapsed %}rotate-180{% endif %}" 
+                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div id="{% if id %}{{ id }}{% else %}card_{{ forloop.counter }}{% endif %}_body" 
+         class="{% if collapsible and collapsed %}hidden{% endif %}">
+        {% if content %}
+        <div class="px-4 py-5 sm:p-6 {{ body_class }}">
+            {{ content|safe }}
+        </div>
+        {% endif %}
+        
+        {% if footer %}
+        <div class="px-4 py-4 sm:px-6 {{ footer_class }} {% if not content %}{% if title or collapsible %}border-t border-gray-200{% endif %}{% endif %}">
+            {{ footer|safe }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if collapsible %}
+<script>
+function toggleCardCollapse(cardId) {
+    const body = document.getElementById(cardId + '_body');
+    const icon = document.getElementById(cardId + '_icon');
+    
+    if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        icon.classList.remove('rotate-180');
+    } else {
+        body.classList.add('hidden');
+        icon.classList.add('rotate-180');
+    }
+}
+</script>
+{% endif %}

@@ -1,56 +1,310 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Report Management{% endblock %}</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Report Management - Delval Flow Controls{% endblock %}</title>
+    <meta name="description" content="Report Management System for Delval Flow Controls Private Limited - Manufacturing workflow management">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="{% static 'js/toast.js' %}"></script>
+    <script src="{% static 'js/form_validation.js' %}"></script>
+    <script src="{% static 'js/interactive_elements.js' %}"></script>
+    <script src="{% static 'js/performance.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen flex flex-col">
-        <header class="bg-blue-600 text-white p-4">
-            <div class="container mx-auto flex justify-between items-center">
-                <h1 class="text-2xl font-bold">Report Management</h1>
-                <nav>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md">
+        Skip to main content
+    </a>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-700 to-blue-900 text-white shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo and Title -->
+                <div class="flex items-center space-x-4">
+                    <div>
+                        <h1 class="text-xl font-bold">Report Management</h1>
+                        <p class="text-xs text-blue-200">Delval Flow Controls</p>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center space-x-6">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'logout' %}" class="bg-red-500 hover:bg-red-700 px-4 py-2 rounded">Logout</a>
-                    {% else %}
-                        <a href="{% url 'login' %}" class="bg-green-500 hover:bg-green-700 px-4 py-2 rounded mr-2">Login</a>
-                        <a href="{% url 'register' %}" class="bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded">Register</a>
+                        <a href="{% url 'dashboard' %}" class="text-blue-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            Dashboard
+                        </a>
+                        {% if user.is_staff %}
+                            <a href="/admin/" class="text-blue-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                                Admin
+                            </a>
+                        {% endif %}
                     {% endif %}
                 </nav>
+
+                <!-- User Actions -->
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <div class="flex items-center space-x-2">
+                            <div class="hidden sm:block">
+                                <p class="text-sm font-medium">{{ user.username }}</p>
+                                <p class="text-xs text-blue-200">
+                                    {% if user.profile.role %}
+                                        {{ user.profile.role|title }}
+                                    {% else %}
+                                        User
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
+                                <span class="text-sm font-medium">{{ user.username|first|upper }}</span>
+                            </div>
+                        </div>
+                        <a href="{% url 'logout' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500 px-3 py-1.5 text-sm">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500 px-3 py-1.5 text-sm">Login</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button type="button" class="text-blue-200 hover:text-white p-2 rounded-md" onclick="toggleMobileMenu()">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
             </div>
-        </header>
 
-        <main class="flex-grow container mx-auto p-4">
-            {% if messages %}
-    <div id="messages" class="fixed top-4 right-4 z-50 space-y-2 w-72">
-        {% for message in messages %}
-            <div class="p-4 text-sm text-blue-800 rounded-lg bg-blue-50 shadow-lg border border-blue-200"
-                 role="alert">
-                <span class="font-medium">{{ message }}</span>
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="text-blue-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            Dashboard
+                        </a>
+                        {% if user.is_staff %}
+                            <a href="/admin/" class="text-blue-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                                Admin
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-blue-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            Login
+                        </a>
+                        <a href="{% url 'register' %}" class="text-blue-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
             </div>
-        {% endfor %}
-    </div>
-{% endif %}
+        </div>
+    </header>
 
-            {% block content %}{% endblock %}
-        </main>
+    <!-- Main Content -->
+    <main id="main-content" class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6 fade-in">
+        <!-- Breadcrumb (if needed) -->
+        {% block breadcrumb %}{% endblock %}
 
-        <footer class="bg-gray-800 text-white p-4 text-center">
-            <p>&copy; 2023 Report Management. All rights reserved.</p>
-        </footer>
-    </div>
+        <!-- Page Header -->
+        {% block page_header %}{% endblock %}
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="toast-container">
+                {% for message in messages %}
+                    {% include "components/toast.html" with message=message message_type=message.tags %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white mt-auto">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; {% now "Y" %} Report Management. All rights reserved.</p>
+                    <p class="text-xs text-gray-400">Delval Flow Controls Private Limited</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-200">Privacy</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-200">Terms</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-200">Support</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
     <script>
+        // Mobile menu toggle
+        window.toggleMobileMenu = function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        };
+
+        // Toast notification system
+        window.initializeToast = function(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                // Show toast with animation
+                setTimeout(function() {
+                    toast.classList.remove('translate-x-full');
+                    toast.classList.add('translate-x-0');
+                }, 100);
+                
+                // Auto-dismiss after duration
+                const duration = parseInt(toast.getAttribute('data-duration')) || 5000;
+                setTimeout(function() {
+                    window.dismissToast(toastId);
+                }, duration);
+            }
+        };
+
+        window.dismissToast = function(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.remove('translate-x-0');
+                toast.classList.add('translate-x-full');
+                
+                setTimeout(function() {
+                    toast.remove();
+                }, 300);
+            }
+        };
+
+        // Form validation helpers
+        window.validateForm = function(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return false;
+            
+            let isValid = true;
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    field.classList.remove('border-red-500');
+                }
+            });
+            
+            return isValid;
+        };
+
+        // Loading state management
+        window.showLoading = function(buttonId, loadingText = 'Loading...') {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                const originalText = button.innerText;
+                button.innerText = loadingText;
+                button.disabled = true;
+                button.setAttribute('data-original-text', originalText);
+            }
+        };
+
+        window.hideLoading = function(buttonId) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                const originalText = button.getAttribute('data-original-text');
+                button.innerText = originalText;
+                button.disabled = false;
+                button.removeAttribute('data-original-text');
+            }
+        };
+
+        // Focus trap for modals
+        window.trapFocus = function(element) {
+            const focusableElements = element.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+
+            element.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstFocusable) {
+                            lastFocusable.focus();
+                            e.preventDefault();
+                        }
+                    } else {
+                        if (document.activeElement === lastFocusable) {
+                            firstFocusable.focus();
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+        };
+
         // Auto-hide messages after 4-5 seconds
         document.addEventListener('DOMContentLoaded', function() {
-            const messagesDiv = document.getElementById('messages');
+            const messagesDiv = document.querySelector('.toast-container');
             if (messagesDiv) {
                 setTimeout(function() {
-                    messagesDiv.style.display = 'none';
-                }, 4500); // 4.5 seconds
+                    const toasts = messagesDiv.querySelectorAll('[id^="toast_"]');
+                    toasts.forEach(toast => {
+                        window.dismissToast(toast.id);
+                    });
+                }, 4500);
             }
+
+            // Accessibility improvements
+            document.addEventListener('keydown', function(e) {
+                // ESC key to close modals
+                if (e.key === 'Escape') {
+                    const openModals = document.querySelectorAll('[role="dialog"]:not(.hidden)');
+                    openModals.forEach(modal => {
+                        const modalId = modal.id;
+                        if (modalId && window.closeModal) {
+                            window.closeModal(modalId);
+                        }
+                    });
+                }
+            });
         });
     </script>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

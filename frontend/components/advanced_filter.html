@@ -1,0 +1,277 @@
+{% comment %}
+Advanced Filter Component
+Usage:
+{% include "components/advanced_filter.html" with filter_id="orderFilter" filters=filters %}
+
+Parameters:
+- filter_id: Unique ID for the filter component (required)
+- filters: Array of filter objects with 'name', 'type', 'label', 'options', 'placeholder' properties (required)
+- on_apply: JavaScript function to call when applying filters (optional)
+- on_reset: JavaScript function to call when resetting filters (optional)
+- class: Additional CSS classes (optional)
+- collapsible: Boolean to make filter collapsible (default: true)
+- collapsed: Boolean to start collapsed (default: false)
+{% endcomment %}
+
+{% assign filter_container_id = filter_id | append: "_container" %}
+{% assign filter_toggle_id = filter_id | append: "_toggle" %}
+
+<div id="{{ filter_container_id }}" 
+     class="bg-white rounded-lg shadow-md border border-gray-200 p-4 {{ class }}"
+     {% if collapsible %}collapsible-filter{% endif %}">
+    
+    {% if collapsible %}
+    <div class="flex items-center justify-between mb-4 cursor-pointer" onclick="toggleFilterCollapse('{{ filter_id }}')">
+        <h3 class="text-lg font-medium text-gray-900">Filters</h3>
+        <button id="{{ filter_toggle_id }}" 
+                class="text-gray-400 hover:text-gray-600 focus:outline-none transition-transform duration-200">
+            <svg class="h-5 w-5 transform transition-transform duration-200" 
+                 id="{{ filter_id }}_icon" 
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+        </button>
+    </div>
+    {% else %}
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Filters</h3>
+    {% endif %}
+    
+    <div id="{{ filter_id }}_content" 
+         class="{% if collapsible and collapsed %}hidden{% endif %} space-y-4">
+        <form id="{{ filter_id }}" onsubmit="return false;">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for filter in filters %}
+                <div class="filter-field">
+                    {% if filter.type == 'text' or filter.type == 'search' %}
+                    <label for="{{ filter_id }}_{{ filter.name }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filter.label }}
+                    </label>
+                    {% if filter.type == 'search' %}
+                    <div class="relative">
+                        <input type="text" 
+                               id="{{ filter_id }}_{{ filter.name }}" 
+                               name="{{ filter.name }}" 
+                               placeholder="{{ filter.placeholder }}"
+                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    {% else %}
+                    <input type="text" 
+                           id="{{ filter_id }}_{{ filter.name }}" 
+                           name="{{ filter.name }}" 
+                           placeholder="{{ filter.placeholder }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    {% endif %}
+                    
+                    {% elsif filter.type == 'select' %}
+                    <label for="{{ filter_id }}_{{ filter.name }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filter.label }}
+                    </label>
+                    <select id="{{ filter_id }}_{{ filter.name }}" 
+                            name="{{ filter.name }}" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        {% if filter.allow_all %}
+                        <option value="">All</option>
+                        {% endif %}
+                        {% for option in filter.options %}
+                        <option value="{{ option.value }}">{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    {% elsif filter.type == 'date' or filter.type == 'daterange' %}
+                    <label for="{{ filter_id }}_{{ filter.name }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filter.label }}
+                    </label>
+                    {% if filter.type == 'daterange' %}
+                    <div class="flex space-x-2">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-600 mb-1">From</label>
+                            <input type="date" 
+                                   id="{{ filter_id }}_{{ filter.name }}_from" 
+                                   name="{{ filter.name }}_from" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-600 mb-1">To</label>
+                            <input type="date" 
+                                   id="{{ filter_id }}_{{ filter.name }}_to" 
+                                   name="{{ filter.name }}_to" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                    </div>
+                    {% else %}
+                    <input type="date" 
+                           id="{{ filter_id }}_{{ filter.name }}" 
+                           name="{{ filter.name }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    {% endif %}
+                    
+                    {% elsif filter.type == 'checkbox' or filter.type == 'multicheckbox' %}
+                    <fieldset class="space-y-2">
+                        <legend class="block text-sm font-medium text-gray-700 mb-2">{{ filter.label }}</legend>
+                        <div class="space-y-2">
+                            {% for option in filter.options %}
+                            <div class="flex items-center">
+                                <input type="checkbox" 
+                                       id="{{ filter_id }}_{{ filter.name }}_{{ forloop.counter0 }}" 
+                                       name="{{ filter.name }}" 
+                                       value="{{ option.value }}"
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <label for="{{ filter_id }}_{{ filter.name }}_{{ forloop.counter0 }}" 
+                                       class="ml-2 text-sm text-gray-700">
+                                    {{ option.label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                    
+                    {% elsif filter.type == 'number' or filter.type == 'range' %}
+                    <label for="{{ filter_id }}_{{ filter.name }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ filter.label }}
+                    </label>
+                    {% if filter.type == 'range' %}
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-600 mb-1">Min</label>
+                            <input type="number" 
+                                   id="{{ filter_id }}_{{ filter.name }}_min" 
+                                   name="{{ filter.name }}_min" 
+                                   placeholder="{{ filter.min_placeholder }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-600 mb-1">Max</label>
+                            <input type="number" 
+                                   id="{{ filter_id }}_{{ filter.name }}_max" 
+                                   name="{{ filter.name }}_max" 
+                                   placeholder="{{ filter.max_placeholder }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                    </div>
+                    {% else %}
+                    <input type="number" 
+                           id="{{ filter_id }}_{{ filter.name }}" 
+                           name="{{ filter.name }}" 
+                           placeholder="{{ filter.placeholder }}"
+                           {% if filter.min %}min="{{ filter.min }}"{% endif %}
+                           {% if filter.max %}max="{{ filter.max }}"{% endif %}
+                           {% if filter.step %}step="{{ filter.step }}"{% endif %}
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    {% endif %}
+                    
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Filter Actions -->
+            <div class="flex justify-between items-center pt-4 border-t border-gray-200 mt-4">
+                <div class="text-sm text-gray-600">
+                    <span id="{{ filter_id }}_count">0</span> results found
+                </div>
+                <div class="flex space-x-3">
+                    {% include "components/button.html" with text="Reset" type="secondary" size="sm" onclick="resetFilters('" | append: filter_id | append: "')" %}
+                    {% include "components/button.html" with text="Apply Filters" type="primary" size="sm" onclick="applyFilters('" | append: filter_id | append: "')" %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Filter functionality
+function toggleFilterCollapse(filterId) {
+    const content = document.getElementById(filterId + '_content');
+    const icon = document.getElementById(filterId + '_icon');
+    const toggle = document.getElementById(filterId + '_toggle');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.remove('rotate-180');
+        icon.classList.add('rotate-0');
+    } else {
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-0');
+        icon.classList.add('rotate-180');
+    }
+}
+
+function applyFilters(filterId) {
+    const form = document.getElementById(filterId);
+    const formData = new FormData(form);
+    const filters = {};
+    
+    // Convert FormData to object
+    for (let [key, value] of formData.entries()) {
+        if (value) {
+            // Handle multi-select and checkboxes
+            if (filters[key]) {
+                if (Array.isArray(filters[key])) {
+                    filters[key].push(value);
+                } else {
+                    filters[key] = [filters[key], value];
+                }
+            } else {
+                filters[key] = value;
+            }
+        }
+    }
+    
+    // Call custom apply function if provided
+    if (typeof window.applyFiltersCallback === 'function') {
+        window.applyFiltersCallback(filters);
+    }
+    
+    // Update result count
+    updateFilterCount(filterId);
+    
+    // Show toast notification
+    showToast('Filters applied successfully', { type: 'success', duration: 2000 });
+}
+
+function resetFilters(filterId) {
+    const form = document.getElementById(filterId);
+    form.reset();
+    
+    // Call custom reset function if provided
+    if (typeof window.resetFiltersCallback === 'function') {
+        window.resetFiltersCallback();
+    }
+    
+    // Update result count
+    updateFilterCount(filterId);
+    
+    // Show toast notification
+    showToast('Filters reset', { type: 'info', duration: 2000 });
+}
+
+function updateFilterCount(filterId) {
+    const countElement = document.getElementById(filterId + '_count');
+    if (countElement) {
+        // This would be updated by the actual filtering logic
+        // For now, just show a placeholder
+        countElement.textContent = 'Updated';
+    }
+}
+
+// Auto-collapse filters on mobile
+if (window.innerWidth < 768) {
+    document.addEventListener('DOMContentLoaded', function() {
+        const collapsibleFilters = document.querySelectorAll('.collapsible-filter');
+        collapsibleFilters.forEach(filter => {
+            const filterId = filter.id.replace('_container', '');
+            const content = document.getElementById(filterId + '_content');
+            const icon = document.getElementById(filterId + '_icon');
+            
+            if (content && !content.classList.contains('hidden')) {
+                toggleFilterCollapse(filterId);
+            }
+        });
+    });
+}
+</script>

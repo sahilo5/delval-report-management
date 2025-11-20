@@ -1,0 +1,63 @@
+{% comment %}
+Reusable Button Component
+Usage:
+{% include "components/button.html" with text="Submit" type="primary" size="md" onclick="handleSubmit()" %}
+
+Parameters:
+- text: Button text (required)
+- type: Button style variant (primary, secondary, danger, success, warning, info) - default: primary
+- size: Button size (xs, sm, md, lg, xl) - default: md
+- onclick: JavaScript onclick handler (optional)
+- href: URL for link-style button (optional)
+- disabled: Boolean to disable button (optional)
+- class: Additional CSS classes (optional)
+- id: Element ID (optional)
+{% endcomment %}
+
+{% if href %}
+    <a href="{{ href }}"
+       class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
+              {% if type == 'primary' %}bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500
+              {% elif type == 'secondary' %}bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500
+              {% elif type == 'danger' %}bg-red-600 hover:bg-red-700 text-white focus:ring-red-500
+              {% elif type == 'success' %}bg-green-600 hover:bg-green-700 text-white focus:ring-green-500
+              {% elif type == 'warning' %}bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-500
+              {% elif type == 'info' %}bg-cyan-600 hover:bg-cyan-700 text-white focus:ring-cyan-500
+              {% else %}bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500{% endif %}
+              {% if size == 'xs' %}px-2 py-1 text-xs
+              {% elif size == 'sm' %}px-3 py-1.5 text-sm
+              {% elif size == 'md' %}px-4 py-2 text-sm
+              {% elif size == 'lg' %}px-5 py-2.5 text-base
+              {% elif size == 'xl' %}px-6 py-3 text-base
+              {% else %}px-4 py-2 text-sm{% endif %}
+              {% if disabled %}opacity-50 cursor-not-allowed{% endif %}
+              {{ class }}"
+       {% if id %}id="{{ id }}"{% endif %}
+       {% if onclick %}onclick="{{ onclick }}"{% endif %}
+       {% if disabled %}aria-disabled="true"{% endif %}>
+        {{ text }}
+    </a>
+{% else %}
+    <button type="{% if type == 'submit' %}submit{% else %}button{% endif %}"
+            class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
+                   {% if type == 'primary' %}bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500
+                   {% elif type == 'secondary' %}bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500
+                   {% elif type == 'danger' %}bg-red-600 hover:bg-red-700 text-white focus:ring-red-500
+                   {% elif type == 'success' %}bg-green-600 hover:bg-green-700 text-white focus:ring-green-500
+                   {% elif type == 'warning' %}bg-yellow-600 hover:bg-yellow-700 text-white focus:ring-yellow-500
+                   {% elif type == 'info' %}bg-cyan-600 hover:bg-cyan-700 text-white focus:ring-cyan-500
+                   {% else %}bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500{% endif %}
+                   {% if size == 'xs' %}px-2 py-1 text-xs
+                   {% elif size == 'sm' %}px-3 py-1.5 text-sm
+                   {% elif size == 'md' %}px-4 py-2 text-sm
+                   {% elif size == 'lg' %}px-5 py-2.5 text-base
+                   {% elif size == 'xl' %}px-6 py-3 text-base
+                   {% else %}px-4 py-2 text-sm{% endif %}
+                   {% if disabled %}opacity-50 cursor-not-allowed{% endif %}
+                   {{ class }}"
+            {% if id %}id="{{ id }}"{% endif %}
+            {% if onclick %}onclick="{{ onclick }}"{% endif %}
+            {% if disabled %}disabled{% endif %}>
+        {{ text }}
+    </button>
+{% endif %}
