@@ -3,234 +3,941 @@
 {% block title %}Assembly Engineer Dashboard{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
+<div class="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
     <h2 class="text-3xl font-bold mb-6 text-center">Assembly Engineer Dashboard</h2>
-    <p class="text-lg mb-4">Welcome, {{ user.username }}! You are logged in as an Assembly Engineer.</p>
-
-    <div class="mb-8">
-        <h3 class="text-2xl font-semibold mb-4">Scan QR Code for Actuator Data</h3>
-
-        <div class="flex flex-col md:flex-row gap-4">
-            <div class="md:w-1/2">
-                <video id="qr-video" class="w-full border rounded-lg" autoplay muted playsinline></video>
-                <div class="mt-2">
-                    <button id="start-scan" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Start Scan</button>
-                    <button id="stop-scan" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2" disabled>Stop Scan</button>
-                    </div>
-                <p id="scan-status" class="text-sm text-gray-600 mt-2">Enter data below or click "Start Scan" to scan a QR code.</p>
-            </div>
-
-            <div class="md:w-1/2">
-                <p class="text-sm text-gray-700">All fields are editable. You can either type the values directly or scan a QR code (JSON payload) to populate them.</p>
-                <small class="text-xs text-gray-500">Expected QR JSON keys (example): sales_order_no, order_no, order_qty, line_item, series, type, size, cylinder_size, spring_size, moc, customer, item_code, creation_date, branch</small>
-            </div>
-        </div>
+    <!-- Tab Navigation -->
+    <div class="border-b border-gray-200 mb-6">
+        <nav class="-mb-px flex space-x-8">
+            <button id="add-actuator-tab"
+                    class="tab-button py-2 px-1 border-b-2 font-medium text-sm border-blue-500 text-blue-600 focus:outline-none"
+                    data-tab="add-actuator">
+                Add Actuator
+            </button>
+            <button id="all-actuators-tab"
+                    class="tab-button py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none"
+                    data-tab="all-actuators">
+                All Actuators
+            </button>
+        </nav>
     </div>
 
-    <form id="actuator-form" method="post" class="mb-8">
+    <!-- Tab Content -->
+    <div id="tab-content">
+        <!-- Add Actuator Tab -->
+        <div id="add-actuator-content" class="tab-content">
+            <!-- <div class="mb-8">
+                <h3 class="text-2xl font-semibold mb-4">Scan QR Code for Actuator Data</h3>
+
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="md:w-1/2">
+                        <video id="qr-video" class="w-full border rounded-lg" autoplay muted playsinline></video>
+                        <div class="mt-2 flex gap-2">
+                            <button id="start-scan"
+                                    class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                Start Scan
+                            </button>
+                            <button id="stop-scan"
+                                    class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled>
+                                Stop Scan
+                            </button>
+                        </div>
+                        <p id="scan-status" class="text-sm text-gray-600 mt-2">Enter data below or click "Start Scan" to scan a QR code.</p>
+                    </div>
+
+                    <div class="md:w-1/2">
+                        <p class="text-sm text-gray-700">All fields are editable. You can either type the values directly or scan a QR code (JSON payload) to populate them.</p>
+                        <small class="text-xs text-gray-500">Expected QR JSON keys (example): sales_order_no, order_no, order_qty, line_item, series, type, size, cylinder_size, spring_size, moc, customer, item_code, creation_date, branch</small>
+                    </div>
+                </div>
+            </div> -->
+
+            <form id="actuator-form" method="post" class="mb-8" data-validate-form="true">
         {% csrf_token %}
         <h3 class="text-2xl font-semibold mb-4">Actuator Data</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Sales Order No</label>
-                <input id="sales_order_no" name="sales_order_no" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="sales_order_no" class="block text-sm font-medium text-gray-700 mb-1">
+                    Sales Order No <span class="text-red-500 ml-1">*</span>
+                </label>
+                <input type="text"
+                       id="sales_order_no"
+                       name="sales_order_no"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       required
+                       data-required="true"
+                       placeholder="Enter sales order number">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Line Item</label>
-                <input id="line_item" name="line_item" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="line_item" class="block text-sm font-medium text-gray-700 mb-1">
+                    Line Item
+                </label>
+                <input type="text"
+                       id="line_item"
+                       name="line_item"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter line item">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Order No</label>
-                <input id="order_no" name="order_no" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="order_no" class="block text-sm font-medium text-gray-700 mb-1">
+                    Order No <span class="text-red-500 ml-1">*</span>
+                </label>
+                <input type="text"
+                       id="order_no"
+                       name="order_no"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       required
+                       data-required="true"
+                       placeholder="Enter order number">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Customer</label>
-                <input id="customer" name="customer" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="customer" class="block text-sm font-medium text-gray-700 mb-1">
+                    Customer
+                </label>
+                <input type="text"
+                       id="customer"
+                       name="customer"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter customer name">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Series</label>
-                <input id="series" name="series" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="series" class="block text-sm font-medium text-gray-700 mb-1">
+                    Series
+                </label>
+                <select id="series"
+                        name="series"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                        onchange="handleSeriesChange()">
+                    <option value="">Select Series</option>
+                    <option value="21">21 Series</option>
+                    <option value="25">25 Series</option>
+                </select>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Type</label>
-                <input id="type" name="type" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-1">
+                    Type
+                </label>
+                <input type="text"
+                       id="type"
+                       name="type"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter type">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Size</label>
-                <input id="size" name="size" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="size" class="block text-sm font-medium text-gray-700 mb-1">
+                    Size
+                </label>
+                <input type="text"
+                       id="size"
+                       name="size"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter size">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Cylinder Size</label>
-                <input id="cylinder_size" name="cylinder_size" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="cylinder_size" class="block text-sm font-medium text-gray-700 mb-1">
+                    Cylinder Size
+                </label>
+                <input type="text"
+                       id="cylinder_size"
+                       name="cylinder_size"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter cylinder size">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Spring Size</label>
-                <input id="spring_size" name="spring_size" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="spring_size" class="block text-sm font-medium text-gray-700 mb-1">
+                    Spring Size
+                </label>
+                <input type="text"
+                       id="spring_size"
+                       name="spring_size"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter spring size">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">MOC</label>
-                <input id="moc" name="moc" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="moc" class="block text-sm font-medium text-gray-700 mb-1">
+                    MOC (Material of Construction)
+                </label>
+                <input type="text"
+                       id="moc"
+                       name="moc"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter material of construction">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Item Code</label>
-                <input id="item_code" name="item_code" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="item_code" class="block text-sm font-medium text-gray-700 mb-1">
+                    Item Code
+                </label>
+                <input type="text"
+                       id="item_code"
+                       name="item_code"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter item code">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Order Qty</label>
-                <input id="order_qty" name="order_qty" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="order_qty" class="block text-sm font-medium text-gray-700 mb-1">
+                    Order Quantity
+                </label>
+                <input type="number"
+                       id="order_qty"
+                       name="order_qty"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       min="1"
+                       data-validate="numeric"
+                       placeholder="Enter quantity">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Creation Date</label>
-                <input id="creation_date" name="creation_date" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="creation_date" class="block text-sm font-medium text-gray-700 mb-1">
+                    Creation Date
+                </label>
+                <input type="date"
+                       id="creation_date"
+                       name="creation_date"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Branch</label>
-                <input id="branch" name="branch" class="mt-1 block w-full border-gray-300 rounded-md focus:bg-white">
+            <div class="mb-4">
+                <label for="branch" class="block text-sm font-medium text-gray-700 mb-1">
+                    Branch
+                </label>
+                <input type="text"
+                       id="branch"
+                       name="branch"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                       placeholder="Enter branch">
             </div>
         </div>
 
+        <!-- Series-specific fields section -->
+        <div id="series-fields" class="hidden mt-6 p-4 bg-gray-50 rounded-lg">
+            <h4 class="text-lg font-semibold mb-4">Series-Specific Fields</h4>
+            
+            <!-- 21 Series Fields -->
+            <div id="series-21-fields" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="mb-4">
+                        <label for="body" class="block text-sm font-medium text-gray-700 mb-1">
+                            Body
+                        </label>
+                        <input type="text"
+                               id="body"
+                               name="body"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                               placeholder="Enter body details">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="end_cap_right" class="block text-sm font-medium text-gray-700 mb-1">
+                            End Cap (Right)
+                        </label>
+                        <input type="text"
+                               id="end_cap_right"
+                               name="end_cap_right"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                               placeholder="Enter right end cap details">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="end_cap_left" class="block text-sm font-medium text-gray-700 mb-1">
+                            End Cap (Left)
+                        </label>
+                        <input type="text"
+                               id="end_cap_left"
+                               name="end_cap_left"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                               placeholder="Enter left end cap details">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="pinion" class="block text-sm font-medium text-gray-700 mb-1">
+                            Pinion
+                        </label>
+                        <input type="text"
+                               id="pinion"
+                               name="pinion"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                               placeholder="Enter pinion details">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="assembler_name" class="block text-sm font-medium text-gray-700 mb-1">
+                            Assembler Name
+                        </label>
+                        <input type="text"
+                               id="assembler_name"
+                               name="assembler_name"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                               placeholder="Enter assembler name">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 25 Series Fields (all existing fields) -->
+            <div id="series-25-fields" class="hidden">
+                <p class="text-sm text-gray-600 mb-4">All standard fields will be used for 25 Series actuators.</p>
+            </div>
+            
+        </div>
+
         <input type="hidden" id="actuator_data" name="actuator_data">
-        <div class="mt-4">
-            <button id="submit-btn" class="bg-green-500 text-white px-6 py-2 rounded opacity-50">Save Actuator Data</button>
-            <button id="clear-btn" type="button" class="ml-2 bg-gray-300 text-black px-4 py-2 rounded">Clear</button>
+        <div class="mt-6 flex gap-2">
+            <button type="submit"
+                    id="submit-btn"
+                    class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 hover:bg-green-700 text-white focus:ring-green-500 px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                Save Actuator Data
+            </button>
+            <button type="button"
+                    id="clear-btn"
+                    class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-300 hover:bg-gray-400 text-gray-700 focus:ring-gray-500 px-4 py-2 text-sm">
+                Clear
+            </button>
         </div>
     </form>
 </div>
 
-<script type="module">
-    import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
+<!-- All Actuators Tab -->
+<div id="all-actuators-content" class="tab-content hidden">
+    <!-- Filters Section -->
+    <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+                <label for="search-input" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input type="text"
+                       id="search-input"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Search by order no, customer, item code..."
+                       value="{{ search_query }}">
+            </div>
+            <div>
+                <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select id="status-filter"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">All Statuses</option>
+                    {% for status_value, status_label in status_choices %}
+                    <option value="{{ status_value }}" {% if status_filter == status_value %}selected{% endif %}>
+                        {{ status_label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-end space-x-2">
+                <button id="apply-filters"
+                        class="flex-1 inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 px-4 py-2 text-sm">
+                    Apply Filters
+                </button>
+                <button id="clear-filters"
+                        class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-300 hover:bg-gray-400 text-gray-700 focus:ring-gray-500 px-4 py-2 text-sm">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
 
-    QrScanner.WORKER_PATH = "https://unpkg.com/qr-scanner@1.4.2/qr-scanner-worker.min.js";
+    <!-- Actuators Table -->
+    <div class="overflow-x-auto shadow overflow-hidden rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="sales_order_no">
+                        Sales Order No
+                        {% if sort_by == 'sales_order_no' %}
+                            {% if sort_order == 'asc' %}
+                                <span class="ml-1">↑</span>
+                            {% else %}
+                                <span class="ml-1">↓</span>
+                            {% endif %}
+                        {% endif %}
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="order_no">
+                        Order No
+                        {% if sort_by == 'order_no' %}
+                            {% if sort_order == 'asc' %}
+                                <span class="ml-1">↑</span>
+                            {% else %}
+                                <span class="ml-1">↓</span>
+                            {% endif %}
+                        {% endif %}
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="customer">
+                        Customer
+                        {% if sort_by == 'customer' %}
+                            {% if sort_order == 'asc' %}
+                                <span class="ml-1">↑</span>
+                            {% else %}
+                                <span class="ml-1">↓</span>
+                            {% endif %}
+                        {% endif %}
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="item_code">
+                        Item Code
+                        {% if sort_by == 'item_code' %}
+                            {% if sort_order == 'asc' %}
+                                <span class="ml-1">↑</span>
+                            {% else %}
+                                <span class="ml-1">↓</span>
+                            {% endif %}
+                        {% endif %}
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="order_qty">
+                        Quantity
+                        {% if sort_by == 'order_qty' %}
+                            {% if sort_order == 'asc' %}
+                                <span class="ml-1">↑</span>
+                            {% else %}
+                                <span class="ml-1">↓</span>
+                            {% endif %}
+                        {% endif %}
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="order_status">
+                        Status
+                        {% if sort_by == 'order_status' %}
+                            {% if sort_order == 'asc' %}
+                                <span class="ml-1">↑</span>
+                            {% else %}
+                                <span class="ml-1">↓</span>
+                            {% endif %}
+                        {% endif %}
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" data-sort="creation_date">
+                        Creation Date
+                        {% if sort_by == 'creation_date' %}
+                            {% if sort_order == 'asc' %}
+                                <span class="ml-1">↑</span>
+                            {% else %}
+                                <span class="ml-1">↓</span>
+                            {% endif %}
+                        {% endif %}
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for actuator in actuators %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ actuator.sales_order_no }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ actuator.order_no }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ actuator.customer }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ actuator.item_code }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ actuator.order_qty }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                            {% if actuator.order_status == 'pending' %}bg-gray-100 text-gray-800
+                            {% elif actuator.order_status == 'under_assembly' %}bg-blue-100 text-blue-800
+                            {% elif actuator.order_status == 'under_testing' %}bg-yellow-100 text-yellow-800
+                            {% elif actuator.order_status == 'under_painting' %}bg-purple-100 text-purple-800
+                            {% elif actuator.order_status == 'under_finishing' %}bg-indigo-100 text-indigo-800
+                            {% elif actuator.order_status == 'under_qa' %}bg-orange-100 text-orange-800
+                            {% elif actuator.order_status == 'finished_goods' %}bg-green-100 text-green-800
+                            {% endif %}">
+                            {{ actuator.get_order_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ actuator.creation_date|date:"Y-m-d" }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <a href="#" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                        <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
+                        No actuators found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    // Your full JS code here...
-</script>
-
+    <!-- Pagination -->
+    {% if actuators.has_other_pages %}
+    <div class="mt-6 flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+        <div class="text-sm text-gray-700">
+            Showing page {{ actuators.number }} of {{ actuators.paginator.num_pages }}
+        </div>
+        <div class="flex flex-wrap space-x-1 sm:space-x-2">
+            {% if actuators.has_previous %}
+                <button class="pagination-btn px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50" data-page="1">
+                    First
+                </button>
+                <button class="pagination-btn px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50" data-page="{{ actuators.previous_page_number }}">
+                    Previous
+                </button>
+            {% endif %}
+            
+            {% for num in actuators.paginator.page_range %}
+                {% if actuators.number == num %}
+                    <span class="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded-md text-sm">{{ num }}</span>
+                {% elif num > actuators.number|add:'-3' and num < actuators.number|add:'3' %}
+                    <button class="pagination-btn px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50" data-page="{{ num }}">{{ num }}</button>
+                {% endif %}
+            {% endfor %}
+            
+            {% if actuators.has_next %}
+                <button class="pagination-btn px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50" data-page="{{ actuators.next_page_number }}">
+                    Next
+                </button>
+                <button class="pagination-btn px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50" data-page="{{ actuators.paginator.num_pages }}">
+                    Last
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+</div>
+</div>
 
 <script type="module">
     import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
     QrScanner.WORKER_PATH = "https://unpkg.com/qr-scanner@1.4.2/qr-scanner-worker.min.js";
 
     document.addEventListener("DOMContentLoaded", () => {
+        // Tab switching functionality with state preservation
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Restore active tab from localStorage or default to first tab
+        const activeTab = localStorage.getItem('activeTab') || 'add-actuator';
+        
+        // Set initial active tab
+        tabButtons.forEach(button => {
+            const tabName = button.getAttribute('data-tab');
+            if (tabName === activeTab) {
+                button.classList.remove('border-transparent', 'text-gray-500');
+                button.classList.add('border-blue-500', 'text-blue-600');
+            } else {
+                button.classList.remove('border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            }
+        });
+        
+        tabContents.forEach(content => {
+            if (content.id === `${activeTab}-content`) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.getAttribute('data-tab');
+                
+                // Save form data before switching tabs (if switching from add-actuator)
+                if (targetTab !== 'add-actuator' && formValidator) {
+                    // Save current form state to sessionStorage
+                    const formData = {};
+                    fields.forEach(f => formData[f] = document.getElementById(f).value || "");
+                    sessionStorage.setItem('actuatorFormData', JSON.stringify(formData));
+                }
+                
+                // Save active tab to localStorage
+                localStorage.setItem('activeTab', targetTab);
+                
+                // Update button styles
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+                button.classList.remove('border-transparent', 'text-gray-500');
+                button.classList.add('border-blue-500', 'text-blue-600');
+                
+                // Show/hide tab content
+                tabContents.forEach(content => {
+                    if (content.id === `${targetTab}-content`) {
+                        content.classList.remove('hidden');
+                        
+                        // Restore form data when returning to add-actuator tab
+                        if (targetTab === 'add-actuator' && sessionStorage.getItem('actuatorFormData')) {
+                            try {
+                                const savedFormData = JSON.parse(sessionStorage.getItem('actuatorFormData'));
+                                fields.forEach(f => {
+                                    const el = document.getElementById(f);
+                                    if (el && savedFormData[f]) {
+                                        el.value = savedFormData[f];
+                                        // Trigger input event to update validation
+                                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                                    }
+                                });
+                                sessionStorage.removeItem('actuatorFormData');
+                                enableSubmit();
+                            } catch (e) {
+                                console.warn('Could not restore form data:', e);
+                            }
+                        }
+                    } else {
+                        content.classList.add('hidden');
+                    }
+                });
+            });
+        });
+        
+        // Filter and search functionality
+        const searchInput = document.getElementById('search-input');
+        const statusFilter = document.getElementById('status-filter');
+        const applyFiltersBtn = document.getElementById('apply-filters');
+        const clearFiltersBtn = document.getElementById('clear-filters');
+        
+        // Show loading state
+        function showLoading() {
+            const table = document.querySelector('.overflow-x-auto table');
+            if (table) {
+                const loadingRow = document.createElement('tr');
+                loadingRow.id = 'loading-row';
+                loadingRow.innerHTML = `
+                    <td colspan="8" class="px-6 py-8 text-center">
+                        <div class="inline-flex items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading...
+                        </div>
+                    </td>
+                `;
+                table.querySelector('tbody').appendChild(loadingRow);
+            }
+        }
+        
+        function applyFilters() {
+            showLoading();
+            const search = searchInput.value;
+            const status = statusFilter.value;
+            
+            // Get current sort parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const sort = urlParams.get('sort') || 'created_at';
+            const order = urlParams.get('order') || 'desc';
+            
+            // Build new URL with filters
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('search', search);
+            newUrl.searchParams.set('status', status);
+            newUrl.searchParams.set('sort', sort);
+            newUrl.searchParams.set('order', order);
+            newUrl.searchParams.delete('page'); // Reset to first page
+            
+            // Save current tab before navigation
+            const activeTab = document.querySelector('.tab-button.border-blue-500').getAttribute('data-tab');
+            if (activeTab === 'add-actuator' && formValidator) {
+                // Save form data to sessionStorage
+                const formData = {};
+                fields.forEach(f => formData[f] = document.getElementById(f).value || "");
+                sessionStorage.setItem('actuatorFormData', JSON.stringify(formData));
+            }
+            
+            window.location.href = newUrl.toString();
+        }
+        
+        function clearFilters() {
+            showLoading();
+            // Clear input fields
+            searchInput.value = '';
+            statusFilter.value = '';
+            
+            // Get current sort parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const sort = urlParams.get('sort') || 'created_at';
+            const order = urlParams.get('order') || 'desc';
+            
+            // Build new URL without filters
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.delete('search');
+            newUrl.searchParams.delete('status');
+            newUrl.searchParams.delete('page'); // Reset to first page
+            newUrl.searchParams.set('sort', sort);
+            newUrl.searchParams.set('order', order);
+            
+            window.location.href = newUrl.toString();
+        }
+        
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', applyFilters);
+        }
+        
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', clearFilters);
+        }
+        
+        // Allow Enter key in search input to apply filters
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    applyFilters();
+                }
+            });
+        }
+        
+        // Sorting functionality
+        const sortableHeaders = document.querySelectorAll('[data-sort]');
+        sortableHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const sortBy = header.getAttribute('data-sort');
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Get current sort order
+                const currentSort = urlParams.get('sort') || 'created_at';
+                const currentOrder = urlParams.get('order') || 'desc';
+                
+                // Toggle sort order if same column, default to asc for new column
+                let newOrder = 'asc';
+                if (currentSort === sortBy && currentOrder === 'asc') {
+                    newOrder = 'desc';
+                }
+                
+                // Build new URL with sort parameters
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('sort', sortBy);
+                newUrl.searchParams.set('order', newOrder);
+                newUrl.searchParams.delete('page'); // Reset to first page
+                
+                window.location.href = newUrl.toString();
+            });
+        });
+        
+        // Pagination functionality
+        const paginationButtons = document.querySelectorAll('.pagination-btn');
+        paginationButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const page = button.getAttribute('data-page');
+                
+                // Build new URL with page parameter
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('page', page);
+                
+                window.location.href = newUrl.toString();
+            });
+        });
 
+        // Initialize form validation
+        let formValidator = null;
+        try {
+            formValidator = window.initFormValidation('actuator-form', {
+                showRealTimeValidation: true,
+                validateOnBlur: true,
+                validateOnInput: false
+            });
+            console.log("Form validator initialized successfully"); // Debug log
+        } catch (e) {
+            console.error("Error initializing form validator:", e); // Debug log
+        }
+
+        // QR Scanner elements (may not exist if scanner is commented out)
         const video = document.getElementById("qr-video");
         const startBtn = document.getElementById("start-scan");
         const stopBtn = document.getElementById("stop-scan");
         const status = document.getElementById("scan-status");
         const actuatorDataInput = document.getElementById("actuator_data");
+        const submitBtn = document.getElementById("submit-btn");
+        const clearBtn = document.getElementById("clear-btn");
+        const form = document.getElementById("actuator-form");
 
         const fields = [
             "sales_order_no","line_item","order_no","customer","series","type",
             "size","cylinder_size","spring_size","moc","item_code","order_qty",
-            "creation_date","branch"
+            "creation_date","branch","body","end_cap_right","end_cap_left","pinion","assembler_name"
         ];
 
         let qrScanner = null;
 
         function enableSubmit() {
-            const o = document.getElementById("order_no").value.trim();
-            const s = document.getElementById("sales_order_no").value.trim();
-            const b = document.getElementById("submit-btn");
-
-            if (o && s) {
-                b.disabled = false;
-                b.classList.remove("opacity-50");
+            const orderNo = document.getElementById("order_no").value.trim();
+            const salesOrderNo = document.getElementById("sales_order_no").value.trim();
+            
+            console.log("enableSubmit called - orderNo:", orderNo, "salesOrderNo:", salesOrderNo); // Debug log
+            
+            // Enable submit button only if required fields are filled
+            // Don't check full form validation here as it might be too strict
+            if (orderNo && salesOrderNo) {
+                submitBtn.disabled = false;
+                console.log("Submit button enabled"); // Debug log
             } else {
-                b.disabled = true;
-                b.classList.add("opacity-50");
+                submitBtn.disabled = true;
+                console.log("Submit button disabled"); // Debug log
             }
         }
 
-        // Fill form fields
+        // Fill form fields from QR data
         function fillForm(data) {
             fields.forEach(key => {
                 const el = document.getElementById(key);
-                if (el && data[key] !== undefined) el.value = data[key];
+                if (el && data[key] !== undefined) {
+                    el.value = data[key];
+                    // Trigger input event to update validation
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             });
+            enableSubmit();
         }
 
-        // Each field updates hidden JSON
+        // Update hidden JSON data when fields change
         fields.forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             el.addEventListener("input", () => {
-                const d = {};
-                fields.forEach(f => d[f] = document.getElementById(f).value || "");
-                actuatorDataInput.value = JSON.stringify(d);
+                const formData = {};
+                fields.forEach(f => formData[f] = document.getElementById(f).value || "");
+                actuatorDataInput.value = JSON.stringify(formData);
                 enableSubmit();
             });
         });
 
-        // Start scanner
-        startBtn.addEventListener("click", async () => {
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-            status.textContent = "Starting scanner...";
+        // Start QR scanner (only if elements exist)
+        if (startBtn && stopBtn && video && status) {
+            startBtn.addEventListener("click", async () => {
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                status.textContent = "Starting scanner...";
 
-            if (qrScanner) try { qrScanner.stop(); qrScanner.destroy(); } catch {}
-
-            qrScanner = new QrScanner(
-                video,
-                result => {
+                if (qrScanner) {
                     try {
-                        const text = typeof result === "string" ? result : result.data;
-                        const json = JSON.parse(text);
-
-                        fillForm(json);
-                        actuatorDataInput.value = JSON.stringify(json);
-                        enableSubmit();
-
-                        status.textContent = "QR scanned successfully!";
-
                         qrScanner.stop();
                         qrScanner.destroy();
-                        qrScanner = null;
-
-                        startBtn.disabled = false;
-                        stopBtn.disabled = true;
-
-                    } catch {
-                        status.textContent = "Invalid QR — expected JSON.";
+                    } catch (e) {
+                        console.warn('Error stopping previous scanner:', e);
                     }
                 }
-            );
 
-            try {
-                await qrScanner.start();
-                status.textContent = "Scanning...";
-            } catch (err) {
-                status.textContent = "Camera not available";
+                try {
+                    qrScanner = new QrScanner(
+                        video,
+                        result => {
+                            try {
+                                const text = typeof result === "string" ? result : result.data;
+                                const json = JSON.parse(text);
+
+                                fillForm(json);
+                                actuatorDataInput.value = JSON.stringify(json);
+                                enableSubmit();
+
+                                status.textContent = "QR scanned successfully!";
+                                window.toastManager.success("QR code scanned successfully!");
+
+                                qrScanner.stop();
+                                qrScanner.destroy();
+                                qrScanner = null;
+
+                                startBtn.disabled = false;
+                                stopBtn.disabled = true;
+
+                            } catch (e) {
+                                status.textContent = "Invalid QR — expected JSON.";
+                                window.toastManager.error("Invalid QR code format. Expected JSON data.");
+                            }
+                        }
+                    );
+
+                    await qrScanner.start();
+                    status.textContent = "Scanning...";
+                } catch (err) {
+                    status.textContent = "Camera not available";
+                    window.toastManager.error("Camera access denied or not available");
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                }
+            });
+
+            // Stop QR scanner
+            stopBtn.addEventListener("click", () => {
+                if (qrScanner) {
+                    qrScanner.stop();
+                    qrScanner.destroy();
+                    qrScanner = null;
+                }
                 startBtn.disabled = false;
                 stopBtn.disabled = true;
+                status.textContent = "Scanner stopped.";
+            });
+        }
+
+        // Clear form
+        if (clearBtn) {
+            clearBtn.addEventListener("click", () => {
+                console.log("Clear button clicked"); // Debug log
+                form.reset();
+                actuatorDataInput.value = "";
+                if (formValidator) {
+                    formValidator.reset();
+                }
+                enableSubmit();
+                window.toastManager.info("Form cleared");
+            });
+        }
+
+        // Form submission
+        form.addEventListener("submit", (e) => {
+            if (!formValidator.validate()) {
+                e.preventDefault();
+                window.toastManager.error("Please correct the validation errors in the form");
+                return false;
             }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Saving...";
+            
+            // Save current tab to localStorage
+            const activeTab = document.querySelector('.tab-button.border-blue-500').getAttribute('data-tab');
+            localStorage.setItem('activeTab', activeTab);
+            
+            // Simulate form submission (replace with actual submission)
+            setTimeout(() => {
+                window.toastManager.success("Actuator data saved successfully!");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Save Actuator Data";
+                
+                // Optionally clear form after successful submission
+                // clearBtn.click();
+            }, 1500);
         });
 
-        // Stop scanner
-        stopBtn.addEventListener("click", () => {
-            if (qrScanner) {
-                qrScanner.stop();
-                qrScanner.destroy();
-                qrScanner = null;
-            }
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            status.textContent = "Scanner stopped.";
-        });
+        // Initialize submit button state
+        enableSubmit();
     });
+
+    // Series-specific field handling
+    function handleSeriesChange() {
+        const series = document.getElementById('series').value;
+        const seriesFields = document.getElementById('series-fields');
+        const series21Fields = document.getElementById('series-21-fields');
+        const series25Fields = document.getElementById('series-25-fields');
+        const seriesOtherFields = document.getElementById('series-other-fields');
+        
+        // Hide all series-specific fields first
+        seriesFields.classList.add('hidden');
+        series21Fields.classList.add('hidden');
+        series25Fields.classList.add('hidden');
+        seriesOtherFields.classList.add('hidden');
+        
+        if (series) {
+            seriesFields.classList.remove('hidden');
+            
+            if (series === '21') {
+                series21Fields.classList.remove('hidden');
+            } else if (series === '25') {
+                series25Fields.classList.remove('hidden');
+            } else {
+                seriesOtherFields.classList.remove('hidden');
+            }
+        }
+    }
 </script>
 
 

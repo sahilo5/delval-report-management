@@ -7,6 +7,7 @@ urlpatterns = [
     path('dashboard/assembler/', assembly_views.assembler_dashboard, name='assembler_dashboard'),
     path('assembler/', assembly_views.assembler_dashboard, name='assembler_dashboard'),
     path('assembler/order/<str:order_no>/', assembly_views.assembler_order_details, name='assembler_order_details'),
+    path('assembler/print-report/<str:order_no>/', assembly_views.print_order_report, name='print_order_report'),
     path("heat-report/<str:order_no>/", assembly_views.generate_heat_report, name="generate_heat_report"),
     
     # Testing URLs

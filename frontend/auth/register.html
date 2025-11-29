@@ -39,28 +39,29 @@
 
         <!-- Registration Form -->
         <div class="auth-card shadow-2xl p-8">
-        <form method="post" class="space-y-6" id="registerForm" onsubmit="return validateRegistrationForm()">
+        <form method="post" class="space-y-6" id="registerForm">
             {% csrf_token %}
             
-            {% include "components/form_input.html" with field=form.username label="Username" type="text" placeholder="Choose a username" required=True autocomplete="username" help_text="Username must be at least 3 characters long" %}
+            {% include "components/form_input.html" with field=form.username label="Username" type="text" placeholder="Choose a username" required=True autocomplete="username" %}
+            
+            {% include "components/form_input.html" with field=form.first_name label="First Name" type="text" placeholder="Enter your first name" required=True autocomplete="given-name" %}
+            
+            {% include "components/form_input.html" with field=form.last_name label="Last Name" type="text" placeholder="Enter your last name" required=True autocomplete="family-name" %}
             
             {% include "components/form_input.html" with field=form.email label="Email Address" type="email" placeholder="Enter your email" required=True autocomplete="email" help_text="We'll never share your email with anyone else" %}
             
-            {% include "components/form_input.html" with field=form.password1 label="Password" type="password" placeholder="Create a strong password" required=True autocomplete="new-password" id="password1" oninput="checkPasswordStrength()" %}
+            {% include "components/form_input.html" with field=form.password1 label="Password" type="password" placeholder="Create a strong password" required=True autocomplete="new-password" oninput="checkPasswordStrength()" %}
             
             <!-- Password Strength Indicator -->
             <div class="mt-2">
-                <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs text-gray-600">Password Strength</span>
-                    <span id="strength-text" class="text-xs font-medium">--</span>
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-medium text-gray-500">Password Strength</span>
+                    <span id="strength-text" class="text-xs font-medium text-gray-500">--</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-1">
-                    <div id="password-strength" class="password-strength"></div>
-                </div>
-                <p class="mt-1 text-xs text-gray-500">Use 8+ characters with a mix of letters, numbers & symbols</p>
+                <div id="password-strength" class="password-strength"></div>
             </div>
             
-            {% include "components/form_input.html" with field=form.password2 label="Confirm Password" type="password" placeholder="Confirm your password" required=True autocomplete="new-password" id="password2" oninput="checkPasswordMatch()" %}
+            {% include "components/form_input.html" with field=form.password2 label="Confirm Password" type="password" placeholder="Confirm your password" required=True autocomplete="new-password" oninput="checkPasswordMatch()" %}
             
             <!-- Password Match Indicator -->
             <div id="match-indicator" class="hidden mt-2">
@@ -72,28 +73,11 @@
                 </div>
             </div>
 
-            <!-- Terms and Conditions -->
-            <div class="space-y-4">
-                <div class="flex items-center">
-                    <input id="agree-terms" name="agree-terms" type="checkbox" required class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="agree-terms" class="ml-2 block text-sm text-gray-900">
-                        I agree to the 
-                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">Terms and Conditions</a>
-                        and 
-                        <a href="#" class="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200">Privacy Policy</a>
-                    </label>
-                </div>
-
-                <div class="flex items-center">
-                    <input id="email-updates" name="email-updates" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="email-updates" class="ml-2 block text-sm text-gray-900">
-                        Send me product updates and announcements
-                    </label>
-                </div>
-            </div>
 
             <div class="space-y-3">
-                {% include "components/button.html" with text="Create Account" type="primary" size="lg" class="w-full" onclick="showLoading('registerBtn', 'Creating account...')" id="registerBtn" %}
+                <button type="submit" class="inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 px-5 py-2.5 text-base w-full" id="registerBtn">
+                    Create Account
+                </button>
                 
                 <div class="relative">
                     <div class="absolute inset-0 flex items-center">
@@ -145,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 window.checkPasswordStrength = function() {
-    const password = document.getElementById('password1').value;
+    const password = document.getElementById('id_password1').value;
     const strengthBar = document.getElementById('password-strength');
     const strengthText = document.getElementById('strength-text');
     
@@ -179,8 +163,8 @@ window.checkPasswordStrength = function() {
 }
 
 window.checkPasswordMatch = function() {
-    const password1 = document.getElementById('password1').value;
-    const password2 = document.getElementById('password2').value;
+    const password1 = document.getElementById('id_password1').value;
+    const password2 = document.getElementById('id_password2').value;
     const matchIndicator = document.getElementById('match-indicator');
     const matchIcon = document.getElementById('match-icon');
     const matchText = document.getElementById('match-text');
@@ -205,30 +189,31 @@ window.checkPasswordMatch = function() {
     }
 }
 
-window.validateRegistrationForm = function() {
+// Form submission handler
+document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('registerForm');
-    const password1 = document.getElementById('password1').value;
-    const password2 = document.getElementById('password2').value;
-    const agreeTerms = document.getElementById('agree-terms').checked;
+    const submitBtn = document.getElementById('registerBtn');
     
-    // Basic form validation
-    if (!window.validateForm('registerForm')) {
-        return false;
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const password1 = document.getElementById('id_password1').value;
+            const password2 = document.getElementById('id_password2').value;
+            
+            // Check password match
+            if (password1 !== password2) {
+                e.preventDefault();
+                alert('Passwords do not match');
+                return;
+            }
+            
+            // Show loading state
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating account...';
+                submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            }
+        });
     }
-    
-    // Check password match
-    if (password1 !== password2) {
-        alert('Passwords do not match');
-        return false;
-    }
-    
-    // Check terms agreement
-    if (!agreeTerms) {
-        alert('You must agree to the Terms and Conditions');
-        return false;
-    }
-    
-    return true;
-}
+});
 </script>
 {% endblock %}

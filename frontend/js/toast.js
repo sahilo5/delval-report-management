@@ -93,9 +93,8 @@ class ToastManager {
     createToast(id, message, type, title, dismissible, extraClass) {
         const toast = document.createElement('div');
         toast.id = id;
-        toast.className = `toast ${extraClass}`;
+        toast.className = `toast max-w-md w-full ${extraClass}`;
         toast.style.cssText = `
-            max-width: 400px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -116,7 +115,7 @@ class ToastManager {
 
         // Content
         const content = document.createElement('div');
-        content.style.cssText = 'flex: 1; min-width: 0;';
+        content.style.cssText = 'flex: 1; min-width: 0; overflow-wrap: break-word; word-wrap: break-word;';
         
         if (title) {
             const titleElement = document.createElement('div');
@@ -127,7 +126,7 @@ class ToastManager {
 
         const messageElement = document.createElement('div');
         messageElement.textContent = message;
-        messageElement.style.cssText = 'font-size: 14px; color: #6b7280; line-height: 1.5;';
+        messageElement.style.cssText = 'font-size: 14px; color: #6b7280; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word;';
         content.appendChild(messageElement);
         
         toast.appendChild(content);

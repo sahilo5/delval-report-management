@@ -36,13 +36,15 @@ class MainActuator(models.Model):
         return f"{self.order_no} - {self.item_code}"
 
 
-class OrderDetails(models.Model):
+
+
+class OrderDetails_25_Series(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('completed', 'Completed'),
     ]
 
-    order_no = models.ForeignKey(MainActuator, on_delete=models.CASCADE, related_name='order_details')
+    order_no = models.ForeignKey(MainActuator, on_delete=models.CASCADE, related_name='order_details_25')
     assembler_status = models.CharField(max_length=20, choices=STATUS_CHOICES, blank=True, null=True, default='pending')
     actuator_serial_no = models.CharField(max_length=100, unique=True)
     assembler_name = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -58,3 +60,32 @@ class OrderDetails(models.Model):
 
     def __str__(self):
         return f"{self.actuator_serial_no} - {self.order_no.order_no}"
+
+    class Meta:
+        verbose_name = "Order Details (25 Series)"
+        verbose_name_plural = "Order Details (25 Series)"
+
+
+class OrderDetails_21_Series(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+    ]
+
+    order_no = models.ForeignKey(MainActuator, on_delete=models.CASCADE, related_name='order_details_21')
+    actuator_serial_no = models.CharField(max_length=100, unique=True, help_text="Auto-generated as OrderNo-SrNo format")
+    assembler_status = models.CharField(max_length=20, choices=STATUS_CHOICES, blank=True, null=True, default='pending')
+    assembler_name = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    body = models.CharField(max_length=100, blank=True, null=True)
+    end_cap_right = models.CharField(max_length=100, blank=True, null=True)
+    end_cap_left = models.CharField(max_length=100, blank=True, null=True)
+    pinion = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.sr_no} - {self.order_no.order_no}"
+
+    class Meta:
+        verbose_name = "Order Details (21 Series)"
+        verbose_name_plural = "Order Details (21 Series)"

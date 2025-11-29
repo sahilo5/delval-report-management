@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from accounts.models import Profile
+from accounts.forms import CustomUserCreationForm
 
 
 # ================================================================
@@ -11,14 +12,31 @@ from accounts.models import Profile
 # ================================================================
 def register_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        print("POST request received")
+        print("POST data:", request.POST)
+        
+        form = CustomUserCreationForm(request.POST)
+        print("Form created")
+        
         if form.is_valid():
+            print("Form is valid")
+            # Save the user with first name and last name
             user = form.save()
+            print(f"User created: {user.username}")
+            
             login(request, user)
             messages.success(request, 'Registration successful!')
-            return redirect('login')
+            return redirect('dashboard')
+        else:
+            # Debug form errors
+            print("Form is invalid")
+            print("Form errors:", form.errors)
+            for field, errors in form.errors.items():
+                print(f"Field {field}: {errors}")
     else:
-        form = UserCreationForm()
+        # For GET requests, create an empty form
+        form = CustomUserCreationForm()
+    
     return render(request, 'auth/register.html', {'form': form})
 
 
